@@ -15,28 +15,32 @@ app.use(bodyParser.json());
 
 // Ruta para insertar datos
 app.post('/api/action/insertOne', (req, res) => {
-  const { collection, database, dataSource, document } = req.body;
+  const { collection, database, document } = req.body;
   
   // Cambiar a la base de datos especificada
   const db = mongoose.connection.useDb(database);
 
   // Acceder a la colección y realizar la inserción
   db.collection(collection).insertOne(document, (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.status(200).send(result);
+    if (err) return res.status(500).send({ error: err.message });
+
+    // Filtrar la respuesta para devolver solo el ID del documento insertado
+    res.status(200).send({ insertedId: result.insertedId });
   });
 });
 
 // Ruta para consultar datos
 app.post('/api/action/find', (req, res) => {
-  const { collection, database, dataSource, filter } = req.body;
+  const { collection, database, filter } = req.body;
 
   // Cambiar a la base de datos especificada
   const db = mongoose.connection.useDb(database);
 
   // Acceder a la colección y realizar la consulta
   db.collection(collection).find(filter).toArray((err, documents) => {
-    if (err) return res.status(500).send(err);
+    if (err) return res.status(500).send({ error: err.message });
+
+    // Devolver solo los documentos encontrados
     res.status(200).send(documents);
   });
 });
